@@ -1,0 +1,6 @@
+Package: (packageName)
+Lower: (lower)
+Lower First: (lowerFirst)
+Upper: (upper)
+Upper First: (upperFirst)
+Remain: (remain)

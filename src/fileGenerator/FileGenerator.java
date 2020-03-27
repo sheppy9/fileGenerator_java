@@ -142,8 +142,10 @@ public class FileGenerator extends JFrame implements ActionListener {
 
 					content = content.replace(REMAIN, objName);
 
+					System.out.println(file.getFileName().toString().replace(NAME, objName));
+
 					Path outputFile = Utils.createFolderIfNotExist(System.getProperty("user.home"), "desktop", lowerFirst,
-							file.getFileName().toString().replace(NAME, objName) + ".java");
+							file.getFileName().toString().replace(NAME, objName));
 
 					Files.write(outputFile, content.getBytes("UTF-8"), StandardOpenOption.CREATE);
 					System.out.println("File Generated at: " + outputFile);
