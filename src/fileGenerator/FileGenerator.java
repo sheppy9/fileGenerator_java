@@ -122,10 +122,10 @@ public class FileGenerator extends JFrame implements ActionListener {
 	}
 
 	private static void generateFile(String packageName, String objName) {
-		if (Utils.hasText(packageName) && Utils.hasText(objName)) {
+		if (Utils.hasText(objName)) {
 			Path folder = Paths.get("files");
 			List<Path> files = Utils.getFilesFromFolder(folder);
-			packageName = packageName.equalsIgnoreCase("c") || packageName.equalsIgnoreCase("core") ? "core" : "biz";
+			packageName = Utils.hasText(packageName) && (packageName.equalsIgnoreCase("c") || packageName.equalsIgnoreCase("core")) ? "core" : "biz";
 
 			for (Path file : files) {
 				try {
