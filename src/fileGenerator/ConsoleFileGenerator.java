@@ -22,14 +22,19 @@ public class ConsoleFileGenerator {
 	// --> %HOMEDRIVE%%HOMEPATH%\Desktop
 	// change "Desktop" or the whole "Start in" to the path of the runnable jar
 
+	private static final String version = "2";
 	private static final String exitStr = "bye";
 	private static final String PACKAGE_NAME = "(packageName)";
-	private static final String NAME = "(name)";
 	private static final String LOWER = "(lower)";
 
 	private static final String FOLDER_FORMAT = LOWER;
 
 	public static void main(String[] args) {
+		System.out.println("########################################");
+		System.out.println("########## File Generator v" + version + " ##########");
+		System.out.println("########################################");
+		System.out.println();
+
 		while (true) {
 			Scanner scanner = new Scanner(System.in);
 
@@ -87,12 +92,13 @@ public class ConsoleFileGenerator {
 			}
 
 			if (content != null) {
+				String fileName = file.getFileName().toString();
 				for (Entry<String, String> value : values.entrySet()) {
 					content = content.replace(value.getKey(), value.getValue());
+					fileName = fileName.replace(value.getKey(), value.getValue());
 				}
 
-				Path outputFile = Utils.createFolderIfNotExist(System.getProperty("user.home"), "desktop", values.get(FOLDER_FORMAT),
-						file.getFileName().toString().replace(NAME, entityName));
+				Path outputFile = Utils.createFolderIfNotExist(System.getProperty("user.home"), "desktop", values.get(FOLDER_FORMAT), fileName);
 
 				try {
 					Files.write(outputFile, content.getBytes("UTF-8"), StandardOpenOption.CREATE);
