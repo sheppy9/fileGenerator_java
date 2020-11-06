@@ -1,6 +1,9 @@
 package fileGenerator;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import fileGenerator.utils.Utils;
 
@@ -22,49 +27,51 @@ public class ConsoleFileGenerator {
 	// --> %HOMEDRIVE%%HOMEPATH%\Desktop
 	// change "Desktop" or the whole "Start in" to the path of the runnable jar
 
-	private static final String version = "2";
-	private static final String exitStr = "bye";
-	private static final String PACKAGE_NAME = "(packageName)";
+	private static final String VERSION = "2.0.1";
+	private static final String EXIT_CODE = "bye";
 	private static final String LOWER = "(lower)";
 
 	private static final String FOLDER_FORMAT = LOWER;
+	private static final String DESKTOP = System.getProperty("user.home") + File.separator + "desktop";
 
 	public static void main(String[] args) {
-		System.out.println("########################################");
-		System.out.println("########## File Generator v" + version + " ##########");
-		System.out.println("########################################");
-		System.out.println();
+		print("########################################");
+		print("########## File Generator v" + VERSION + " ##########");
+		print("########################################");
+		print();
+		Scanner scanner = new Scanner(System.in);
 
 		while (true) {
-			Scanner scanner = new Scanner(System.in);
-
-			System.out.print("Package [core/ biz] name: ");
-			String packageName = scanner.nextLine();
-			checkExit(scanner, packageName);
-
-			System.out.print("Entity name: ");
+			print("Entity name: ");
 			String entityName = scanner.nextLine();
-			checkExit(scanner, entityName);
 
-			generateFiles(packageName, entityName);
-			System.out.println();
-		}
-	}
+			if (EXIT_CODE.equalsIgnoreCase(entityName)) {
+				scanner.close();
+				print("Thank for using File Generator. Exited");
+				System.exit(0);
+				scanner.close();
+				break;
+			}
 
-	private static void checkExit(Scanner scanner, String value) {
-		if (value.equalsIgnoreCase(exitStr)) {
-			scanner.close();
-			System.out.println("Thank for using File Generator. Exited");
-			System.exit(0);
+			generateFiles(entityName);
+
+			try {
+
+				Desktop.getDesktop().open(new File(DESKTOP));
+			} catch (IOException e) {
+				print("Failed to open file explorer: " + e.getMessage());
+			}
+			print();
 		}
+
+		scanner.close();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Map<String, String> getReplaceValues(String packageName, String entityName) {
+	private static Map<String, String> getReplaceValues(String entityName) {
 		Map<String, String> values = new HashMap();
 
-		values.put(PACKAGE_NAME, packageName);
-		values.put("(lower)", entityName.toLowerCase());
+		values.put(LOWER, entityName.toLowerCase());
 		values.put("(lowerFirst)", entityName.substring(0, 1).toLowerCase() + entityName.substring(1, entityName.length()));
 		values.put("(upper)", entityName.toUpperCase());
 		values.put("(upperFirst)", entityName.substring(0, 1).toUpperCase() + entityName.substring(1, entityName.length()));
@@ -73,40 +80,44 @@ public class ConsoleFileGenerator {
 		return values;
 	}
 
-	private static void generateFiles(String packageName, String entityName) {
+	private static void generateFiles(String entityName) {
 		Path folder = Paths.get("files");
 		List<Path> files = Utils.getFilesFromFolder(folder);
-		packageName = Utils.hasText(packageName) && (packageName.equalsIgnoreCase("c") || packageName.equalsIgnoreCase("core")) ? "core" : "biz";
-		Map<String, String> values = getReplaceValues(packageName, entityName);
+		Map<String, String> values = getReplaceValues(entityName);
 
-		System.out.println("Generating " + files.size() + " file(s) for " + entityName);
+		print("Generating " + files.size() + " file(s) for " + entityName);
 
 		for (Path file : files) {
-			System.out.println("Replacing content of " + file.getFileName());
+			print("Replacing content of " + file.getFileName());
 
 			String content = null;
+
 			try {
 				content = new String(Files.readAllBytes(file));
 			} catch (IOException e) {
-				System.out.println("[Error] Failed to read template content: " + e.getMessage());
+				print("[Error] Failed to read template content: " + e.getMessage());
 			}
 
 			if (content != null) {
 				String fileName = file.getFileName().toString();
+
 				for (Entry<String, String> value : values.entrySet()) {
 					content = content.replace(value.getKey(), value.getValue());
 					fileName = fileName.replace(value.getKey(), value.getValue());
 				}
 
-				Path outputFile = Utils.createFolderIfNotExist(System.getProperty("user.home"), "desktop", values.get(FOLDER_FORMAT), fileName);
-
 				try {
-					Files.write(outputFile, content.getBytes("UTF-8"), StandardOpenOption.CREATE);
-					System.out.println("File Generated at: " + outputFile);
+					Path outputFile = Utils.createFolderIfNotExist(DESKTOP, values.get(FOLDER_FORMAT), fileName);
+					Files.write(outputFile, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+					print("File Generated at: ", outputFile);
 				} catch (IOException e) {
-					System.out.println("[Error] Failed to write to file: " + e.getMessage());
+					print("[Error] Failed to write to file: ", e.getMessage());
 				}
 			}
 		}
+	}
+
+	private static void print(Object... values) {
+		System.out.println(Stream.of(values).map(Object::toString).collect(Collectors.joining()));
 	}
 }
