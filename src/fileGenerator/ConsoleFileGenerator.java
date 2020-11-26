@@ -42,7 +42,7 @@ public class ConsoleFileGenerator {
 		Scanner scanner = new Scanner(System.in);
 
 		while (true) {
-			print("Entity name: ");
+			System.out.print("Entity name: ");
 			String entityName = scanner.nextLine();
 
 			if (EXIT_CODE.equalsIgnoreCase(entityName)) {
